@@ -7,10 +7,19 @@ import json
 import time
 import random
 from datetime import datetime
-from kafka import KafkaProducer
-from kafka.errors import KafkaError
-from confluent_kafka import avro
-from confluent_kafka.avro import AvroProducer
+try:
+    from confluent_kafka import avro
+    from confluent_kafka.avro import AvroProducer
+    CONFLUENT_AVAILABLE = True
+except ImportError:
+    CONFLUENT_AVAILABLE = False
+
+try:
+    from kafka import KafkaProducer
+    from kafka.errors import KafkaError
+    KAFKA_AVAILABLE = True
+except ImportError:
+    KAFKA_AVAILABLE = False
 
 class EventProducer:
     """High-performance Kafka event producer"""
@@ -22,7 +31,7 @@ class EventProducer:
         
     def create_producer(self, use_avro=True):
         """Initialize Kafka producer"""
-        if use_avro:
+        if use_avro and CONFLUENT_AVAILABLE:
             # Avro producer with schema registry
             value_schema = self._load_schema()
             self.producer = AvroProducer(
@@ -30,7 +39,7 @@ class EventProducer:
                  'schema.registry.url': self.schema_registry_url},
                 default_value_schema=value_schema
             )
-        else:
+        elif KAFKA_AVAILABLE:
             # JSON producer
             self.producer = KafkaProducer(
                 bootstrap_servers=self.bootstrap_servers,
@@ -40,6 +49,8 @@ class EventProducer:
                 max_in_flight_requests_per_connection=1,
                 enable_idempotence=True
             )
+        else:
+            raise ImportError("Neither confluent-kafka nor kafka-python is installed")
     
     def _load_schema(self):
         """Load Avro schema"""
@@ -99,7 +110,7 @@ class EventProducer:
                 # Rate limiting
                 time.sleep(1.0 / rate)
                 
-            except KafkaError as e:
+            except Exception as e:
                 error_count += 1
                 print(f"Error producing event: {e}")
         

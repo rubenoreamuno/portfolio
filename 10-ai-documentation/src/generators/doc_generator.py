@@ -4,6 +4,7 @@ Uses LLM to generate comprehensive data documentation
 """
 
 import argparse
+import os
 from typing import Dict, List, Optional
 from sqlalchemy import create_engine, inspect, MetaData, Table
 from sqlalchemy.engine import Engine
@@ -182,7 +183,6 @@ class DocumentationGenerator:
     
     def generate_all(self, output_path: str = "docs"):
         """Generate documentation for all tables"""
-        import os
         os.makedirs(output_path, exist_ok=True)
         
         tables = self.analyzer.get_tables()
@@ -235,6 +235,5 @@ def main():
     generator.generate_all(args.output)
 
 if __name__ == "__main__":
-    import os
     main()
 

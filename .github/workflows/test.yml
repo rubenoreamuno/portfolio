@@ -37,22 +37,22 @@ jobs:
             if [ -d "$dir" ]; then
               echo "Testing: $dir"
               py_files=$(find "$dir" -name '*.py' -type f ! -name '._*' 2>/dev/null | wc -l)
-              if [ $py_files -gt 0 ]; then
+              if [ "$py_files" -gt 0 ]; then
                 errors=0
                 for file in $(find "$dir" -name '*.py' -type f ! -name '._*' 2>/dev/null); do
-                  if ! python -m py_compile "$file" 2>/dev/null; then
+                  if ! python3 -m py_compile "$file" 2>/dev/null; then
                     echo "❌ Error in: $file" >> $GITHUB_STEP_SUMMARY
-                    ((errors++))
+                    errors=$((errors + 1))
                   fi
                 done
-                if [ $errors -eq 0 ]; then
+                if [ "$errors" -eq 0 ]; then
                   echo "✅ $dir: All Python files valid ($py_files files)" >> $GITHUB_STEP_SUMMARY
-                  ((passed++))
+                  passed=$((passed + 1))
                 else
                   echo "❌ $dir: Found $errors error(s)" >> $GITHUB_STEP_SUMMARY
-                  ((failed++))
+                  failed=$((failed + 1))
                 fi
-                ((total++))
+                total=$((total + 1))
               fi
             fi
           done
@@ -60,7 +60,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Summary:** ✅ Passed: $passed | ❌ Failed: $failed | Total: $total" >> $GITHUB_STEP_SUMMARY
           
-          if [ $failed -gt 0 ]; then
+          if [ "$failed" -gt 0 ]; then
             exit 1
           fi
 

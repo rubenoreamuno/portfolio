@@ -88,97 +88,101 @@ jobs:
           # Test 1: Kafka Producer
           echo "### Test 1: Kafka Producer Event Generation" >> $GITHUB_STEP_SUMMARY
           cd 01-realtime-streaming-pipeline
-          python3 << 'ENDPYTHON' && echo "✅ PASSED" >> $GITHUB_STEP_SUMMARY || echo "❌ FAILED" >> $GITHUB_STEP_SUMMARY
-import sys
-sys.path.insert(0, 'kafka')
-from producer import EventProducer
-
-producer = EventProducer()
-event = producer.generate_event()
-
-assert 'event_id' in event
-assert 'timestamp' in event
-assert 'event_type' in event
-assert 'user_id' in event
-assert 'properties' in event
-
-print(f"✓ Event generated: {event['event_type']}")
-ENDPYTHON
+          cat > /tmp/test_kafka.py << 'PYEOF'
+          import sys
+          sys.path.insert(0, 'kafka')
+          from producer import EventProducer
+          
+          producer = EventProducer()
+          event = producer.generate_event()
+          
+          assert 'event_id' in event
+          assert 'timestamp' in event
+          assert 'event_type' in event
+          assert 'user_id' in event
+          assert 'properties' in event
+          
+          print(f"✓ Event generated: {event['event_type']}")
+          PYEOF
+          python3 /tmp/test_kafka.py && echo "✅ PASSED" >> $GITHUB_STEP_SUMMARY || echo "❌ FAILED" >> $GITHUB_STEP_SUMMARY
           cd ..
           echo "" >> $GITHUB_STEP_SUMMARY
           
           # Test 2: Data Quality
           echo "### Test 2: Data Quality Framework" >> $GITHUB_STEP_SUMMARY
           cd 02-data-quality-framework
-          python3 << 'ENDPYTHON' && echo "✅ PASSED" >> $GITHUB_STEP_SUMMARY || echo "❌ FAILED" >> $GITHUB_STEP_SUMMARY
-import sys
-sys.path.insert(0, 'src')
-import pandas as pd
-from validators.completeness_validator import CompletenessValidator
-
-df = pd.DataFrame({
-    'id': [1, 2, None],
-    'email': ['a@test.com', 'b@test.com', 'c@test.com']
-})
-
-validator = CompletenessValidator('test', ['id'], 0.1)
-result = validator.validate(df)
-
-if not result.passed and len(result.details.get('issues', [])) > 0:
-    print("✓ Validator working correctly")
-else:
-    exit(1)
-ENDPYTHON
+          cat > /tmp/test_quality.py << 'PYEOF'
+          import sys
+          sys.path.insert(0, 'src')
+          import pandas as pd
+          from validators.completeness_validator import CompletenessValidator
+          
+          df = pd.DataFrame({
+              'id': [1, 2, None],
+              'email': ['a@test.com', 'b@test.com', 'c@test.com']
+          })
+          
+          validator = CompletenessValidator('test', ['id'], 0.1)
+          result = validator.validate(df)
+          
+          if not result.passed and len(result.details.get('issues', [])) > 0:
+              print("✓ Validator working correctly")
+          else:
+              exit(1)
+          PYEOF
+          python3 /tmp/test_quality.py && echo "✅ PASSED" >> $GITHUB_STEP_SUMMARY || echo "❌ FAILED" >> $GITHUB_STEP_SUMMARY
           cd ..
           echo "" >> $GITHUB_STEP_SUMMARY
           
           # Test 3: Anomaly Detection
           echo "### Test 3: Anomaly Detection" >> $GITHUB_STEP_SUMMARY
           cd 07-anomaly-detection
-          python3 << 'ENDPYTHON' && echo "✅ PASSED" >> $GITHUB_STEP_SUMMARY || echo "❌ FAILED" >> $GITHUB_STEP_SUMMARY
-import sys
-sys.path.insert(0, 'src')
-import pandas as pd
-import numpy as np
-from detectors.isolation_forest import IsolationForestDetector
-
-np.random.seed(42)
-X = pd.DataFrame(
-    np.vstack([np.random.randn(100, 3), np.random.randn(10, 3) + 5]),
-    columns=['f1', 'f2', 'f3']
-)
-
-detector = IsolationForestDetector(0.1)
-detector.fit(X)
-results = detector.detect_anomalies(X, 0.3)
-anomalies = results[results['is_anomaly']]
-
-if len(anomalies) > 0:
-    print(f"✓ Anomalies detected: {len(anomalies)}")
-else:
-    exit(1)
-ENDPYTHON
+          cat > /tmp/test_anomaly.py << 'PYEOF'
+          import sys
+          sys.path.insert(0, 'src')
+          import pandas as pd
+          import numpy as np
+          from detectors.isolation_forest import IsolationForestDetector
+          
+          np.random.seed(42)
+          X = pd.DataFrame(
+              np.vstack([np.random.randn(100, 3), np.random.randn(10, 3) + 5]),
+              columns=['f1', 'f2', 'f3']
+          )
+          
+          detector = IsolationForestDetector(0.1)
+          detector.fit(X)
+          results = detector.detect_anomalies(X, 0.3)
+          anomalies = results[results['is_anomaly']]
+          
+          if len(anomalies) > 0:
+              print(f"✓ Anomalies detected: {len(anomalies)}")
+          else:
+              exit(1)
+          PYEOF
+          python3 /tmp/test_anomaly.py && echo "✅ PASSED" >> $GITHUB_STEP_SUMMARY || echo "❌ FAILED" >> $GITHUB_STEP_SUMMARY
           cd ..
           echo "" >> $GITHUB_STEP_SUMMARY
           
           # Test 4: Pipeline
           echo "### Test 4: Pipeline Orchestration" >> $GITHUB_STEP_SUMMARY
           cd 09-pipeline-orchestration
-          python3 << 'ENDPYTHON' && echo "✅ PASSED" >> $GITHUB_STEP_SUMMARY || echo "❌ FAILED" >> $GITHUB_STEP_SUMMARY
-import sys
-sys.path.insert(0, 'src')
-from pipelines.etl_pipeline import ETLPipeline
-
-pipeline = ETLPipeline('test')
-pipeline.add_task('extract', lambda: {'data': 'extracted'})
-pipeline.add_task('load', lambda: {'data': 'loaded'}, ['extract'])
-result = pipeline.execute()
-
-if result['status'] == 'success':
-    print("✓ Pipeline working")
-else:
-    exit(1)
-ENDPYTHON
+          cat > /tmp/test_pipeline.py << 'PYEOF'
+          import sys
+          sys.path.insert(0, 'src')
+          from pipelines.etl_pipeline import ETLPipeline
+          
+          pipeline = ETLPipeline('test')
+          pipeline.add_task('extract', lambda: {'data': 'extracted'})
+          pipeline.add_task('load', lambda: {'data': 'loaded'}, ['extract'])
+          result = pipeline.execute()
+          
+          if result['status'] == 'success':
+              print("✓ Pipeline working")
+          else:
+              exit(1)
+          PYEOF
+          python3 /tmp/test_pipeline.py && echo "✅ PASSED" >> $GITHUB_STEP_SUMMARY || echo "❌ FAILED" >> $GITHUB_STEP_SUMMARY
           cd ..
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**All functional tests completed!**" >> $GITHUB_STEP_SUMMARY

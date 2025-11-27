@@ -4,6 +4,46 @@
 
 set -e
 
+# Check dependencies
+check_dependencies() {
+    echo "Checking dependencies..."
+    missing=0
+    
+    if ! python3 -c "import kafka" 2>/dev/null; then
+        echo "⚠️  Missing: kafka-python (pip install kafka-python)"
+        missing=1
+    fi
+    
+    if ! python3 -c "import pandas" 2>/dev/null; then
+        echo "⚠️  Missing: pandas (pip install pandas)"
+        missing=1
+    fi
+    
+    if ! python3 -c "import numpy" 2>/dev/null; then
+        echo "⚠️  Missing: numpy (pip install numpy)"
+        missing=1
+    fi
+    
+    if ! python3 -c "import sklearn" 2>/dev/null; then
+        echo "⚠️  Missing: scikit-learn (pip install scikit-learn)"
+        missing=1
+    fi
+    
+    if [ $missing -eq 1 ]; then
+        echo ""
+        echo "Install missing dependencies with:"
+        echo "  pip install kafka-python pandas numpy scikit-learn"
+        echo ""
+        read -p "Continue anyway? (y/n) " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            exit 1
+        fi
+    fi
+}
+
+check_dependencies
+
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 YELLOW='\033[1;33m'

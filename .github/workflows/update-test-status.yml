@@ -1,0 +1,41 @@
+name: Update Test Status Badge
+
+on:
+  workflow_run:
+    workflows: ["Portfolio Tests"]
+    types:
+      - completed
+
+jobs:
+  update-status:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion != 'cancelled'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Update TEST_STATUS.md
+        run: |
+          STATUS="${{ github.event.workflow_run.conclusion }}"
+          TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          
+          if [ "$STATUS" == "success" ]; then
+            EMOJI="✅"
+            STATUS_TEXT="All tests passing"
+          else
+            EMOJI="❌"
+            STATUS_TEXT="Some tests failing"
+          fi
+          
+          # Update the status in TEST_STATUS.md
+          sed -i "s/| Syntax Validation | ✅ Passing |/| Syntax Validation | $EMOJI $STATUS_TEXT |/" TEST_STATUS.md || true
+          sed -i "s/| Functional Tests | ✅ Passing |/| Functional Tests | $EMOJI $STATUS_TEXT |/" TEST_STATUS.md || true
+          sed -i "s/\*\*Last Updated\*\*:.*/\*\*Last Updated\*\*: $TIMESTAMP/" TEST_STATUS.md || true
+      
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add TEST_STATUS.md
+          git diff --staged --quiet || git commit -m "Update test status: ${{ github.event.workflow_run.conclusion }}"
+          git push
+

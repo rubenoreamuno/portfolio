@@ -39,9 +39,13 @@ test_project() {
     if find . -name "*.py" -type f | grep -q .; then
         echo "Found Python files, checking syntax..."
         
-        # Test Python syntax
+        # Test Python syntax (exclude macOS metadata files)
         local syntax_errors=0
         while IFS= read -r -d '' file; do
+            # Skip macOS resource fork files
+            if [[ "$file" == *"/._"* ]]; then
+                continue
+            fi
             if ! python3 -m py_compile "$file" 2>/dev/null; then
                 echo -e "${RED}  ✗ Syntax error in: $file${NC}"
                 ((syntax_errors++))

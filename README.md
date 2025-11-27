@@ -6,6 +6,7 @@
 
 A comprehensive portfolio showcasing expertise in **Data Engineering**, **Data Quality**, **Data Governance**, and **AI/ML** solutions. This collection demonstrates leadership-level capabilities in designing, implementing, and managing enterprise-grade data systems.
 
+
 ## ✅ Verified & Tested
 
 All projects have been **functionally tested** and verified to work correctly:

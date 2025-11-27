@@ -10,8 +10,8 @@ This system provides comprehensive data cataloging with automatic metadata extra
 
 ```
 ┌─────────────┐     ┌──────────────┐     ┌─────────────┐     ┌─────────────┐
-│   Data      │────▶│   Metadata   │────▶│   Catalog   │────▶│   Search   │
-│  Sources    │     │   Extractor  │     │   Database  │     │   Engine   │
+│   Data      │────▶│   Metadata   │────▶│   Catalog   │────▶│   Search    │
+│  Sources    │     │   Extractor  │     │   Database  │     │   Engine    │
 └─────────────┘     └──────────────┘     └─────────────┘     └─────────────┘
                             │                     │
                             ▼                     ▼
